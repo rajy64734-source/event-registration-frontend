@@ -1,81 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDG CSMU - Glass Tech Auth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
 
-<title>Full Stack Workshop Registration</title>
+        /* --- GLASSY TECH LOADER --- */
+        #loader-wrapper {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+            transition: 0.8s ease-in-out;
+        }
 
-<link rel="stylesheet" href="style.css">
+        .loader-content { text-align: center; }
 
-<!-- MODERN FONT -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+        .loader-title {
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            /* Google Colors */
+            background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse 2s infinite;
+        }
 
+        @keyframes pulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(255,255,255,0)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(255,255,255,0)); }
+        }
+
+        .loader-subtext {
+            font-size: 14px;
+            color: #fff;
+            margin-top: 10px;
+            letter-spacing: 3px;
+            opacity: 0;
+            animation: fadeInSub 1s forwards 0.5s;
+        }
+
+        @keyframes fadeInSub { to { opacity: 0.8; } }
+
+        .loader-hidden { opacity: 0; visibility: hidden; transform: scale(1.2); }
+
+        /* --- UPDATED GOOGLE COLORS BACKGROUND --- */
+        body {
+            background: linear-gradient(-45deg, #4285F4, #EA4335, #FBBC05, #34A853);
+            background-size: 400% 400%;
+            animation: gradient 10s ease infinite;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border-radius: 35px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25);
+            position: relative;
+            width: 850px; max-width: 100%;
+            min-height: 600px; overflow: hidden;
+            opacity: 0;
+            transform: translateY(50px) scale(0.9);
+            transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .container.reveal { opacity: 1; transform: translateY(0) scale(1); }
+
+        /* Sliding Logic */
+        .form-container { position: absolute; top: 0; height: 100%; transition: all 0.6s ease-in-out; }
+        .sign-in-container { left: 0; width: 50%; z-index: 2; }
+        .sign-up-container { left: 0; width: 50%; opacity: 0; z-index: 1; }
+        .container.right-panel-active .sign-in-container { transform: translateX(100%); opacity: 0; }
+        .container.right-panel-active .sign-up-container { transform: translateX(100%); opacity: 1; z-index: 5; animation: show 0.6s; }
+
+        @keyframes show {
+            0%, 49.99% { opacity: 0; z-index: 1; }
+            50%, 100% { opacity: 1; z-index: 5; }
+        }
+
+        form { background: transparent; display: flex; flex-direction: column; padding: 0 40px; height: 100%; justify-content: center; align-items: center; text-align: center; }
+        h1 { color: #fff; margin-bottom: 10px; font-size: 24px; }
+        input, select { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); padding: 10px 15px; margin: 5px 0; width: 100%; border-radius: 12px; color: white; outline: none; }
+        button { border-radius: 20px; border: 1px solid #fff; background: #fff; color: #6c63ff; font-size: 13px; font-weight: bold; padding: 12px 45px; text-transform: uppercase; cursor: pointer; margin-top: 15px; }
+        button.ghost { background: transparent; color: #FFFFFF; }
+
+        .overlay-container { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; overflow: hidden; transition: transform 0.6s ease-in-out; z-index: 100; }
+        .container.right-panel-active .overlay-container { transform: translateX(-100%); }
+        .overlay { background: rgba(108, 99, 255, 0.4); color: #FFFFFF; position: relative; left: -100%; height: 100%; width: 200%; transform: translateX(0); transition: transform 0.6s ease-in-out; }
+        .container.right-panel-active .overlay { transform: translateX(50%); }
+        .overlay-panel { position: absolute; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 0 40px; text-align: center; top: 0; height: 100%; width: 50%; transition: transform 0.6s ease-in-out; }
+        .overlay-left { transform: translateX(-20%); }
+        .container.right-panel-active .overlay-left { transform: translateX(0); }
+        .overlay-right { right: 0; transform: translateX(0); }
+        .container.right-panel-active .overlay-right { transform: translateX(20%); }
+    </style>
 </head>
 <body>
 
-<div class="container">
+    <div id="loader-wrapper">
+        <div class="loader-content">
+            <div class="loader-title">GDG Chhatrapati Shivaji Maharaj University</div>
+            <div class="loader-subtext">PANVEL, NAVI MUMBAI </div>
+        </div>
+    </div>
 
-<h1>🚀 Event Registration Form</h1>
-<p>Register now to secure your spot!</p>
+    <div class="container" id="container">
+        <div class="form-container sign-up-container">
+            <form action="#">
+                <h1>Create Account</h1>
+                <input type="text" placeholder="Full Name" required />
+                <input type="email" placeholder="Email" required />
+                <input type="tel" placeholder="Phone" required />
+                <input type="text" placeholder="College" required />
+                <select required>
+                    <option value="">Select Year</option>
+                    <option>1st Year</option><option>2nd Year</option>
+                    <option>3rd Year</option><option>4th Year</option>
+                </select>
+                <input type="password" placeholder="Password" required />
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
 
-<form id="registrationForm">
+        <div class="form-container sign-in-container">
+            <form action="#">
+                <h1>Login</h1>
+                <input type="email" placeholder="Email" required />
+                <input type="password" placeholder="Password" required />
+                <button type="submit">Login</button>
+            </form>
+        </div>
 
-<div class="form-group">
-<label>Full Name</label>
-<input type="text" id="name" placeholder="Enter your full name" required>
-</div>
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>🌟 GDG CSMU PANVEL</h1>
+                    <p>Already joined? Login to continue.</p>
+                    <button class="ghost" id="signIn">Login</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1>🎓 GDG CSMU</h1>
+                    <p>Register to start your tech journey!</p>
+                    <button class="ghost" id="signUp">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="form-group">
-<label>Email Address</label>
-<input type="email" id="email" placeholder="Enter your email" required>
-</div>
+    <script>
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('loader-wrapper').classList.add('loader-hidden');
+                document.getElementById('container').classList.add('reveal');
+            }, 2500);
+        };
 
-<div class="form-group">
-<label>Phone Number</label>
-<input type="tel" id="phone" placeholder="Enter phone number" required>
-</div>
+        const signUpButton = document.getElementById('signUp');
+        const signInButton = document.getElementById('signIn');
+        const container = document.getElementById('container');
 
-<div class="form-group">
-<label>College Name</label>
-<input type="text" id="college" placeholder="Enter your college name" required>
-</div>
-
-<div class="form-group">
-<label>Select Year</label>
-<select id="year" required>
-<option value="">-- Select Year --</option>
-<option>1st Year</option>
-<option>2nd Year</option>
-<option>3rd Year</option>
-<option>4th Year</option>
-</select>
-</div>
-
-<div class="form-group">
-<label>Branch</label>
-<input type="text" id="branch" placeholder="Enter your branch" required>
-</div>
-
-<div class="form-group">
-<label>Select Event Type</label>
-<select id="event" required>
-<option value="">-- Select --</option>
-<option value="Workshop">Workshop</option>
-<option value="Seminar">Seminar</option>
-<option value="Hackathon">Hackathon</option>
-</select>
-</div>
-
-<button type="submit">Register</button>
-<button type="reset" class="reset">Clear</button>
-
-</form>
-
-<div id="successMessage" class="success"></div>
-
-</div>
-
-<script src="script.js"></script>
+        signUpButton.onclick = () => container.classList.add("right-panel-active");
+        signInButton.onclick = () => container.classList.remove("right-panel-active");
+    </script>
 </body>
 </html>
